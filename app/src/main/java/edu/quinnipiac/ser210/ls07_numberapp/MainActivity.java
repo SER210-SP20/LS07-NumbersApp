@@ -1,28 +1,31 @@
 package edu.quinnipiac.ser210.ls07_numberapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toolbar;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuItemCompat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
     YearsHandler yrHandler = new YearsHandler();
-
+    ShareActionProvider provider;
     boolean userSelect = false;
     private String url1 = "https://numbersapi.p.rapidapi.com/";
     private String url2= "/year?fragment=true&json=true";
@@ -30,10 +33,9 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         Spinner spinner = (Spinner)findViewById(R.id.spinner);
-
-
 
         ArrayAdapter<String> yearsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,yrHandler.years);
 
@@ -66,7 +68,41 @@ public class MainActivity extends AppCompatActivity {
         userSelect = true;
 
     }
-    private class FetchYearFact extends AsyncTask<String,Void,String>{
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+        provider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        if (provider == null)
+            Log.d("MainActivity", "noshare provider");
+
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_share) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TEXT, "Hi there");
+            if (provider != null) {
+                provider.setShareIntent(intent);
+            } else
+                Toast.makeText(this, "no provider", Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return false;
+    }
+
+        private class FetchYearFact extends AsyncTask<String,Void,String>{
 
 
         @Override
